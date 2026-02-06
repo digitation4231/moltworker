@@ -39,7 +39,7 @@ export function buildEnvVars(env: MoltbotEnv): Record<string, string> {
   if (normalizedBaseUrl) {
     envVars.AI_GATEWAY_BASE_URL = normalizedBaseUrl;
     // Also set the provider-specific base URL env var
-    if (isOpenAIGateway) {
+    if (isOpenAIGateway || isWorkersAI) {
       envVars.OPENAI_BASE_URL = normalizedBaseUrl;
     } else {
       envVars.ANTHROPIC_BASE_URL = normalizedBaseUrl;
