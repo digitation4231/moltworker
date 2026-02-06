@@ -226,10 +226,32 @@ if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
 // Usage: Set AI_GATEWAY_BASE_URL or ANTHROPIC_BASE_URL to your endpoint like:
 //   https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/anthropic
 //   https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/openai
+//   https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/workers-ai (Workers AI)
 const baseUrl = (process.env.AI_GATEWAY_BASE_URL || process.env.ANTHROPIC_BASE_URL || '').replace(/\/+$/, '');
 const isOpenAI = baseUrl.endsWith('/openai');
+const isWorkersAI = baseUrl.endsWith('/workers-ai');
 
-if (isOpenAI) {
+if (isWorkersAI) {
+    // Create custom Workers AI provider config via OpenAI-compatible endpoint
+    console.log('Configuring Workers AI provider with base URL:', baseUrl);
+    config.models = config.models || {};
+    config.models.providers = config.models.providers || {};
+    config.models.providers['workers-ai'] = {
+        baseUrl: baseUrl + '/v1',
+        api: 'openai-chat',
+        models: [
+            { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', name: 'Llama 3.3 70B', contextWindow: 131072 },
+            { id: '@cf/meta/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout 17B', contextWindow: 131072 },
+            { id: '@cf/qwen/qwen2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', contextWindow: 32768 },
+        ]
+    };
+    // Add models to the allowlist so they appear in /models
+    config.agents.defaults.models = config.agents.defaults.models || {};
+    config.agents.defaults.models['workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast'] = { alias: 'Llama 3.3 70B' };
+    config.agents.defaults.models['workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct'] = { alias: 'Llama 4 Scout' };
+    config.agents.defaults.models['workers-ai/@cf/qwen/qwen2.5-coder-32b-instruct'] = { alias: 'Qwen Coder 32B' };
+    config.agents.defaults.model.primary = 'workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+} else if (isOpenAI) {
     // Create custom openai provider config with baseUrl override
     // Omit apiKey so moltbot falls back to OPENAI_API_KEY env var
     console.log('Configuring OpenAI provider with base URL:', baseUrl);
