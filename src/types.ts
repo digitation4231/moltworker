@@ -39,6 +39,7 @@ export interface MoltbotEnv {
   BROWSER?: Fetcher;
   CDP_SECRET?: string; // Shared secret for CDP endpoint authentication
   WORKER_URL?: string; // Public URL of the worker (for CDP endpoint)
+  MOLTBOT_MODEL?: string; // Model to use (e.g., 'anthropic/claude-sonnet-4-5')
 }
 
 /**
