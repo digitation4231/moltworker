@@ -259,7 +259,8 @@ app.all('*', async (c) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     let hint = 'Check worker logs with: wrangler tail';
-    if (!c.env.ANTHROPIC_API_KEY) {
+    const isWorkersAI = c.env.AI_GATEWAY_BASE_URL?.endsWith('/workers-ai');
+    if (!c.env.ANTHROPIC_API_KEY && !c.env.AI_GATEWAY_API_KEY && !isWorkersAI) {
       hint = 'ANTHROPIC_API_KEY is not set. Run: wrangler secret put ANTHROPIC_API_KEY';
     } else if (errorMessage.includes('heap out of memory') || errorMessage.includes('OOM')) {
       hint = 'Gateway ran out of memory. Try again or check for memory leaks.';
